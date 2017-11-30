@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Mac & Location</title>
+	<style></style>
+</head>
+<body>
+
+	<script>
+		function startRequest(url) {
+			var xhr = new new XMLHttpRequest();
+			xhr.onreadstatechange = function() {
+				if (xhr.readyState === 4) {
+					if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+						console.log(xhr.responseText);
+					} else {
+						alert('Request error: ' + xhr.status);
+						console.log(xhr);
+					}
+				}
+			}
+			xhr.open('get', url, true);
+			xhr.setRequestHeader('Content-Type', 'application/json');
+			xhr.send();
+		}
+		startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
+	</script>
+</body>
+</html>
