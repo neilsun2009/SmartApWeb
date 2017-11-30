@@ -120,18 +120,18 @@
 				return;
 			}
 			bm.clearOverlays();
-			for (i = 0, len = arr.length; i < len; ++i) {
+			for (len = arr.length, i = len - 1; i >= 0; --i) {
 				if (arr[i].longitude && arr[i].latitude) {
 					// points.push(new BMap.Point(arr[i].longitude, arr[i].latitude));
 					points.push(wgs84togcj02(arr[i].longitude, arr[i].latitude));
 					times.push(arr[i].cap_time);
-					marker = new BMap.Marker(points[i]);
+					marker = new BMap.Marker(points[points.length - 1]);
 				    bm.addOverlay(marker);
-				    label = new BMap.Label(times[i]);
+				    label = new BMap.Label(times[times.length - 1]);
 				    marker.setLabel(label); 
 				}
 			}
-			bm.centerAndZoom(points[0], 15);
+			bm.centerAndZoom(points[points.length - 1], 15);
 			polyline = new BMap.Polyline(points);
 			bm.addOverlay(polyline);
 		    // convertor.translate(points, 1, 5, translateCallback);
