@@ -1,18 +1,20 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+        <meta charset="UTF-8">
 	<title>Mac & Location</title>
+        <script src='http://code.jquery.com/jquery-1.8.0.js' type='text/javascript'></script>
 	<style></style>
 </head>
 <body>
 
 	<script>
-		function startRequest(url) {
+function startRequest(url) {
 			var xhr = new XMLHttpRequest();
-			xhr.onreadstatechange = function() {
+			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4) {
 					if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
-						console.log(xhr.responseText);
+						console.log(JSON.parse(xhr.responseText));
 					} else {
 						alert('Request error: ' + xhr.status);
 						console.log(xhr);
@@ -20,9 +22,9 @@
 				}
 			}
 			xhr.open('get', url, true);
-			xhr.setRequestHeader('Content-Type', 'application/json');
 			xhr.send();
 		}
+		console.log(1);
 		startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
 	</script>
 </body>
