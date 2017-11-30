@@ -4,15 +4,27 @@
     <meta charset="UTF-8">
 	<title>Mac & Location</title>
 	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=fOATGSYuFGYgzyriZhd2ccqK63ngqE98"></script>
+	
     <!-- <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=C52BZ-AFJKX-YDZ4H-77UMN-WCU7F-GGB2U"></script> -->
 	<style>
-		html{height:100%}  
-		body{height:100%;margin:0px;padding:0px}  
-		#container{height:100%}  
+		* {margin: 0;padding: 0;}
+		html {height:100%;}  
+		body {height:100%;}  
+		#container {height:100%;width: calc(100% - 300px);display: inline-block;}
+		#side {width: 290px;height: 100%;overflow-y: auto;background-color: #f2f2f2;display: inline-block;} 
+		#map-pager {text-align: center;padding: 20px;}
+		#map-pager span:hover {text-decoration: underline; cursor: pointer;}
 	</style>
 </head>
 <body>
 	<div id="container"></div>
+	<div id="side">
+		<div id="map-pager">
+			由于地图插件容载有限，一次仅显示50条记录<br/><br/>
+			<span onclick="last50()">上50条</span>
+			<span onclick="next50()">下50条</span>
+		</div>
+	</div>
 	<script>
 		var x_PI = 3.14159265358979324 * 3000.0 / 180.0;
 		var PI = 3.1415926535897932384626;
@@ -83,26 +95,16 @@
 		}
 
 		function drawPoints(data) {
-			//坐标转换完之后的回调函数
-		    /*translateCallback = function(data) {
-		    	var i, len, points = data.points, polyline;
-		        if(data.status === 0) {
-			      	for (i = 0, len = points.length; i < len; ++i) {
-			      		var marker = new BMap.Marker(points[i]);
-				        bm.addOverlay(marker);
-				        var label = new BMap.Label(times[i]);
-				        marker.setLabel(label); //添加百度label
-			      	}
-				    bm.centerAndZoom(points[0], 15);
-			        polyline = new BMap.Polyline(points);
-			        bm.addOverlay(polyline);
-		        }
-		    }*/
 			var arr = data.response.docs,
 				points = [],
 				times = [],
 				// convertor = new BMap.Convertor(),
 				i, len, marker, label;
+			if (arr.length === 0) {
+				alert('已无记录');
+				return;
+			}
+			bm.clearOverlays();
 			for (i = 0, len = arr.length; i < len; ++i) {
 				if (arr[i].longitude && arr[i].latitude) {
 					// points.push(new BMap.Point(arr[i].longitude, arr[i].latitude));
@@ -119,15 +121,31 @@
 			bm.addOverlay(polyline);
 		    // convertor.translate(points, 1, 5, translateCallback);
 		}
+
+		function last50() {
+			if (startNow < 50) {
+				alert('已到最早50条');
+				return;
+			}
+			startNow -= 50;
+			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+		}
+
+		function next50() {
+			startNow += 50;
+			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+		}
 		// startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
 		
-		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=100&sort=cap_time%20desc',
-			bm = new BMap.Map("container");
+		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=50&sort=cap_time%20desc&start=${START}',
+			bm = new BMap.Map("container"),
+			startNow = 0,
+			macNow = '00-00-00-00-00-00';
 
 	    bm.addControl(new BMap.NavigationControl());
 	    bm.enableScrollWheelZoom(true); 
 
-		startRequest(macLocationUrl.replace('${MAC}', '00-00-00-00-00-00'), drawPoints);
+		startRequest(macLocationUrl.replace('${MAC}', '00-00-00-00-00-00').replace('${START}', startNow.toString()), drawPoints);
 	    
 	</script>
 </body>
