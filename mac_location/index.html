@@ -13,11 +13,13 @@
 		#container {height:100%;width: calc(100% - 300px);display: inline-block;}
 		#side {width: 290px;height: 100%;overflow-y: auto;background-color: #f2f2f2;display: inline-block;} 
 		#mac-now {text-align: center; padding: 10px;}
-		#map-pager {text-align: center;padding: 10px;}
+		#map-pager {border-top:  3px solid #eee;text-align: center;padding: 10px;}
 		#map-pager span:hover {text-decoration: underline; cursor: pointer;}
 		#mac-list {border-top:  3px solid #eee; padding-top: 10px;font-size:  18px;text-align: center;}
 		#mac-list-ul li {padding: 5px;font-size: 14px;}
 		#mac-list-ul li:hover {background-color: #ddd;}
+		#mac-list span {font-size: 16px;}
+		#mac-list span:hover {text-decoration: underline; cursor: pointer;}
 	</style>
 </head>
 <body>
@@ -30,7 +32,9 @@
 			<span onclick="next50()">下50条</span>
 		</div>
 		<div id="mac-list">
-			MAC地址列表
+			MAC地址列表<br/>
+			<span onclick="lastMac50()">上50条</span>
+			<span onclick="nextMac50()">下50条</span>
 			<ul id="mac-list-ul">
 				<li>00-00-00-00-00-00: 100条</li>
 			</ul>
@@ -137,10 +141,28 @@
 			var arr = data.facet_counts.facet_fields.mac,
 				temp = '<li data-mac="${MAC}" onclick="changeMac(\'${MAC}\')">${MAC}: ${COUNT}条</li>',
 				html = '', i, len;
+			if (arr.length === 0) {
+				alert('已无记录');
+				return;
+			}
 			for (i = 0, len = arr.length; i < len; i += 2) {
-				html += temp.replace('${MAC}', arr[i]).replace('${COUNT}', arr[i+1]);
+				html += temp.replace(/\${MAC}/g, arr[i]).replace('${COUNT}', arr[i+1]);
 			}
 			document.getElementById('mac-list-ul').innerHTML = html;
+		}
+
+		function lastMac50() {
+			if (macOffsetNow < 50) {
+				alert('已到最早50条');
+				return;
+			}
+			macOffsetNow -= 50;
+	    	startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
+		}
+
+		function nextMac50() {
+			macOffsetNow += 50;
+	    	startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
 		}
 
 		function changeMac(mac) {
