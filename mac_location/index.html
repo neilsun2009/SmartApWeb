@@ -12,17 +12,28 @@
 		body {height:100%;}  
 		#container {height:100%;width: calc(100% - 300px);display: inline-block;}
 		#side {width: 290px;height: 100%;overflow-y: auto;background-color: #f2f2f2;display: inline-block;} 
-		#map-pager {text-align: center;padding: 20px;}
+		#mac-now {text-align: center; padding: 10px;}
+		#map-pager {text-align: center;padding: 10px;}
 		#map-pager span:hover {text-decoration: underline; cursor: pointer;}
+		#mac-list {border-top:  3px solid #eee; padding-top: 10px;font-size:  18px;text-align: center;}
+		#mac-list-ul li {padding: 5px;font-size: 14px;}
+		#mac-list-ul li:hover {background-color: #ddd;}
 	</style>
 </head>
 <body>
 	<div id="container"></div>
 	<div id="side">
+		<div id="mac-now">当前MAC<br/>00-00-00-00-00-00</div>
 		<div id="map-pager">
 			由于地图插件容载有限，一次仅显示50条记录<br/><br/>
 			<span onclick="last50()">上50条</span>
 			<span onclick="next50()">下50条</span>
+		</div>
+		<div id="mac-list">
+			MAC地址列表
+			<ul id="mac-list-ul">
+				<li>00-00-00-00-00-00: 100条</li>
+			</ul>
 		</div>
 	</div>
 	<script>
@@ -122,6 +133,23 @@
 		    // convertor.translate(points, 1, 5, translateCallback);
 		}
 
+		function drawMacList(data) {
+			var arr = data.facet_counts.facet_fields.mac,
+				temp = '<li data-mac="${MAC}" onclick="changeMac(\'${MAC}\')">${MAC}: ${COUNT}条</li>',
+				html = '', i, len;
+			for (i = 0, len = arr.length; i < len; i += 2) {
+				html += temp.replace('${MAC}', arr[i]).replace('${COUNT}', arr[i+1]);
+			}
+			document.getElementById('mac-list-ul').innerHTML = html;
+		}
+
+		function changeMac(mac) {
+			macNow = mac;
+			startNow = 0;
+			document.getElementById('mac-now').innerHTML = '当前MAC<br/>' + mac;
+			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+		}
+
 		function last50() {
 			if (startNow < 50) {
 				alert('已到最早50条');
@@ -138,14 +166,18 @@
 		// startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
 		
 		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=50&sort=cap_time%20desc&start=${START}',
+			macUrl = 'http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=50&facet.offset=${OFFSET}'
 			bm = new BMap.Map("container"),
 			startNow = 0,
+			macOffsetNow = 0,
 			macNow = '00-00-00-00-00-00';
 
 	    bm.addControl(new BMap.NavigationControl());
 	    bm.enableScrollWheelZoom(true); 
 
-		startRequest(macLocationUrl.replace('${MAC}', '00-00-00-00-00-00').replace('${START}', startNow.toString()), drawPoints);
+	    startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
+		// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+		changeMac(macNow);
 	    
 	</script>
 </body>
