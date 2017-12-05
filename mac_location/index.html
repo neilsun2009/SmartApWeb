@@ -10,6 +10,9 @@
 		* {margin: 0;padding: 0;}
 		html {height:100%;}  
 		body {height:100%;}  
+		#loading {position: fixed;height: 100%;width:100%;top: 0;left: 0;display: none;background-color: rgba(0,0,0,0.3);
+			color: #fff;font-size: 20px;text-align: center;padding-top: 200px;box-sizing: border-box;z-index: 2000;}
+		#loading.show {display: block;}
 		#container {height:100%;width: calc(100% - 300px);display: inline-block;}
 		#side {width: 290px;height: 100%;overflow-y: auto;background-color: #f2f2f2;display: inline-block;} 
 		#mac-now {text-align: center; padding: 10px;}
@@ -17,19 +20,20 @@
 		#map-pager span:hover {text-decoration: underline; cursor: pointer;}
 		#mac-list {border-top:  3px solid #eee; padding-top: 10px;font-size:  18px;text-align: center;}
 		#mac-list-ul li {padding: 5px;font-size: 14px;}
-		#mac-list-ul li:hover {background-color: #ddd;}
+		#mac-list-ul li:hover {cursor: pointer;background-color: #ddd;}
 		#mac-list span {font-size: 16px;}
 		#mac-list span:hover {text-decoration: underline; cursor: pointer;}
 	</style>
 </head>
 <body>
+	<div id="loading">Loading data...</div>
 	<div id="container"></div>
 	<div id="side">
 		<div id="mac-now">当前MAC<br/>00-00-00-00-00-00</div>
 		<div id="map-pager">
-			由于地图插件容载有限，一次仅显示1000条记录<br/><br/>
-			<span onclick="last1000()">上1000条</span>
-			<span onclick="next1000()">下1000条</span>
+			由于地图插件容载有限，一次仅显示10000条记录<br/><br/>
+			<span onclick="last10000()">上10000条</span>
+			<span onclick="next10000()">下10000条</span>
 		</div>
 		<div id="mac-list">
 			MAC地址列表<br/>
@@ -94,11 +98,14 @@
 		}
 
 		function startRequest(url, callback) {
-			var xhr = new XMLHttpRequest();
+			var xhr = new XMLHttpRequest(),
+				loading = document.getElementById('loading');
+			loading.className = 'show';
 			xhr.onreadystatechange = function() {
 				if (xhr.readyState === 4) {
 					if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
 						callback(JSON.parse(xhr.responseText));
+						loading.className = '';
 					} else {
 						alert('Request error: ' + xhr.status);
 						console.log(xhr);
@@ -111,12 +118,14 @@
 
 		function drawPoints(data) {
 			function draw(data) {
+				var label, marker;
+				console.log(data);
 				points.push(wgs84togcj02(data.longitude, data.latitude));
-				// times.push(arr[i].cap_time);
+					// times.push(arr[i].cap_time);
 				marker = new BMap.Marker(points[points.length - 1]);
-			    bm.addOverlay(marker);
-			    label = new BMap.Label(labelStr.st + ' ~ ' + labelStr.en);
-			    marker.setLabel(label);
+				bm.addOverlay(marker);
+				label = new BMap.Label(labelStr.st + ' ~ ' + labelStr.en);
+				marker.setLabel(label);
 			}
 			var arr = data.response.docs,
 				points = [],
@@ -126,7 +135,7 @@
 					en: ''
 				},
 				// convertor = new BMap.Convertor(),
-				i, len, marker, label, current, prev = null;
+				i, len, current, prev = null, first = true;
 			if (arr.length === 0) {
 				alert('已无记录');
 				return;
@@ -134,17 +143,21 @@
 			bm.clearOverlays();
 			for (len = arr.length, i = len - 1; i >= 0; --i) {
 				if (arr[i].longitude && arr[i].latitude) {
+					// console.log(current);
 					current = arr[i];
 					if (!prev) {
 						labelStr.st = current.cap_time;
-						continue;
 					} else {
+						// console.log(current);
 						if (current.longitude !== prev.longitude && current.latitude !== prev.latitude) {
 							labelStr.en = prev.cap_time;
 							// points.push(new BMap.Point(arr[i].longitude, arr[i].latitude));
 							draw(prev)
 						    labelStr.st = current.cap_time;
-						    labelStr.en = '';			
+						    labelStr.en = '';
+						    if  (points.length === 1) { // first
+							bm.centerAndZoom(points[0], 15);
+						    }		
 						}
 					}
 					if (i === 0) {
@@ -185,7 +198,7 @@
 
 		function nextMac50() {
 			macOffsetNow += 50;
-	    	startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
+	    		startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
 		}
 
 		function changeMac(mac) {
@@ -195,22 +208,22 @@
 			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 
-		function last1000() {
-			if (startNow < 1000) {
+		function last10000() {
+			if (startNow < 10000) {
 				alert('已到最早1000条');
 				return;
 			}
-			startNow -= 1000;
+			startNow -= 10000;
 			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 
-		function next1000() {
-			startNow += 1000;
+		function next10000() {
+			startNow += 10000;
 			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 		// startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
 		
-		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=1000&sort=cap_time%20desc&start=${START}',
+		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=10000&sort=cap_time%20desc&start=${START}',
 			macUrl = 'http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=50&facet.offset=${OFFSET}'
 			bm = new BMap.Map("container"),
 			startNow = 0,
@@ -219,6 +232,7 @@
 
 	    bm.addControl(new BMap.NavigationControl());
 	    bm.enableScrollWheelZoom(true); 
+	    // bm.centerAndZoom(new BMap.Point(0, 0), 15);
 
 	    startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
 		// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
