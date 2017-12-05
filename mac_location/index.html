@@ -27,9 +27,9 @@
 	<div id="side">
 		<div id="mac-now">当前MAC<br/>00-00-00-00-00-00</div>
 		<div id="map-pager">
-			由于地图插件容载有限，一次仅显示50条记录<br/><br/>
-			<span onclick="last50()">上50条</span>
-			<span onclick="next50()">下50条</span>
+			由于地图插件容载有限，一次仅显示1000条记录<br/><br/>
+			<span onclick="last1000()">上1000条</span>
+			<span onclick="next1000()">下1000条</span>
 		</div>
 		<div id="mac-list">
 			MAC地址列表<br/>
@@ -110,11 +110,23 @@
 		}
 
 		function drawPoints(data) {
+			function draw(data) {
+				points.push(wgs84togcj02(data.longitude, data.latitude));
+				// times.push(arr[i].cap_time);
+				marker = new BMap.Marker(points[points.length - 1]);
+			    bm.addOverlay(marker);
+			    label = new BMap.Label(labelStr.st + ' ~ ' + labelStr.en);
+			    marker.setLabel(label);
+			}
 			var arr = data.response.docs,
 				points = [],
-				times = [],
+				// times = [],
+				labelStr = {
+					st: '',
+					en: ''
+				},
 				// convertor = new BMap.Convertor(),
-				i, len, marker, label;
+				i, len, marker, label, current, prev = null;
 			if (arr.length === 0) {
 				alert('已无记录');
 				return;
@@ -122,13 +134,24 @@
 			bm.clearOverlays();
 			for (len = arr.length, i = len - 1; i >= 0; --i) {
 				if (arr[i].longitude && arr[i].latitude) {
-					// points.push(new BMap.Point(arr[i].longitude, arr[i].latitude));
-					points.push(wgs84togcj02(arr[i].longitude, arr[i].latitude));
-					times.push(arr[i].cap_time);
-					marker = new BMap.Marker(points[points.length - 1]);
-				    bm.addOverlay(marker);
-				    label = new BMap.Label(times[times.length - 1]);
-				    marker.setLabel(label); 
+					current = arr[i];
+					if (!prev) {
+						labelStr.st = current.cap_time;
+						continue;
+					} else {
+						if (current.longitude !== prev.longitude && current.latitude !== prev.latitude) {
+							labelStr.en = prev.cap_time;
+							// points.push(new BMap.Point(arr[i].longitude, arr[i].latitude));
+							draw(prev)
+						    labelStr.st = current.cap_time;
+						    labelStr.en = '';			
+						}
+					}
+					if (i === 0) {
+						labelStr.en = current.cap_time;
+						draw(current);
+					}
+				    prev = current;
 				}
 			}
 			bm.centerAndZoom(points[points.length - 1], 15);
@@ -172,22 +195,22 @@
 			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 
-		function last50() {
-			if (startNow < 50) {
-				alert('已到最早50条');
+		function last1000() {
+			if (startNow < 1000) {
+				alert('已到最早1000条');
 				return;
 			}
-			startNow -= 50;
+			startNow -= 1000;
 			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 
-		function next50() {
-			startNow += 50;
+		function next1000() {
+			startNow += 1000;
 			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 		// startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
 		
-		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=50&sort=cap_time%20desc&start=${START}',
+		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=1000&sort=cap_time%20desc&start=${START}',
 			macUrl = 'http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=50&facet.offset=${OFFSET}'
 			bm = new BMap.Map("container"),
 			startNow = 0,
