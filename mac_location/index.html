@@ -31,9 +31,14 @@
 	<div id="side">
 		<div id="mac-now">当前MAC<br/>00-00-00-00-00-00</div>
 		<div id="map-pager">
-			由于地图插件容载有限，一次仅显示10000条记录<br/><br/>
-			<span onclick="last10000()">上10000条</span>
-			<span onclick="next10000()">下10000条</span>
+			请选择起止日期<br/><br/>
+                        <input type="date" value="2017-05-10" id="start_date">
+                        <br/>~<br/>
+                        <input type="date" value="2017-05-15" id="end_date"><br/><br/>
+                        <button onclick="changeDate()">查询</button><br/><br/>
+                        一次显示10000条数据<br/><br/>
+                        <span onclick="last10000()">前10000条</span>
+                        <span onclick="next10000()">后10000条</span>
 		</div>
 		<div id="mac-list">
 			MAC地址列表<br/>
@@ -53,7 +58,7 @@
 		function out_of_china(lng, lat) {
 		    return (lng < 72.004 || lng > 137.8347) || ((lat < 0.8293 || lat > 55.8271) || false);
 		}
-
+		
 		function transformlat(lng, lat) {
 		    var ret = -100.0 + 2.0 * lng + 3.0 * lat + 0.2 * lat * lat + 0.1 * lng * lat + 0.2 * Math.sqrt(Math.abs(lng));
 		    ret += (20.0 * Math.sin(6.0 * lng * Math.PI) + 20.0 * Math.sin(2.0 * lng * Math.PI)) * 2.0 / 3.0;
@@ -119,7 +124,7 @@
 		function drawPoints(data) {
 			function draw(data) {
 				var label, marker;
-				console.log(data);
+				// console.log(data);
 				points.push(wgs84togcj02(data.longitude, data.latitude));
 					// times.push(arr[i].cap_time);
 				marker = new BMap.Marker(points[points.length - 1]);
@@ -193,7 +198,7 @@
 				return;
 			}
 			macOffsetNow -= 50;
-	    	startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
+	    	        startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
 		}
 
 		function nextMac50() {
@@ -205,7 +210,8 @@
 			macNow = mac;
 			startNow = 0;
 			document.getElementById('mac-now').innerHTML = '当前MAC<br/>' + mac;
-			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+                        getLocationData();
+			// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 
 		function last10000() {
@@ -214,21 +220,49 @@
 				return;
 			}
 			startNow -= 10000;
-			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+                        getLocationData();
+			// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
 
 		function next10000() {
 			startNow += 10000;
-			startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+                        getLocationData();
+			// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
 		}
+
+                function getLocationData() {
+                    startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString())
+                        .replace('${START_TIME}', startTime).replace('${END_TIME}', endTime), drawPoints);
+                }
+
+                function changeDate() {
+                    function getTime(str) {
+                      var arr = str.split('-'),
+                        date = new Date(+arr[0], +arr[1]-1, +arr[2]),
+                        year = date.getUTCFullYear(),
+                        month = date.getUTCMonth() + 1,
+                        day = date.getUTCDate(),
+                        hour = date.getUTCHours();
+                      return year + '-' + month + '-' + day + 'T' + hour + ':00:00Z';
+                    }
+                    var start = document.getElementById('start_date'),
+                      end = document.getElementById('end_date');
+                    startTime = getTime(start.value),
+                    endTime = getTime(end.value);
+                    // console.log(start.value);
+                    getLocationData();
+                    // console.log(Date.now());
+                }
 		// startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
 		
-		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=10000&sort=cap_time%20desc&start=${START}',
+		var macLocationUrl = 'http://localhost:8983/solr/terminal_feature_db/select?fl=latitude,longitude,mac_type,cap_time&q=mac:${MAC}&rows=10000&sort=cap_time%20desc&start=${START}& fq=cap_time:[${START_TIME}%20TO%20${END_TIME}]',
 			macUrl = 'http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=50&facet.offset=${OFFSET}'
 			bm = new BMap.Map("container"),
 			startNow = 0,
 			macOffsetNow = 0,
-			macNow = '00-00-00-00-00-00';
+			macNow = '00-00-00-00-00-00',
+                        startTime = '2017-05-10T00:00:00Z',
+                        endTime = '2017-05-15T00:00:00Z';
 
 	    bm.addControl(new BMap.NavigationControl());
 	    bm.enableScrollWheelZoom(true); 
@@ -236,7 +270,7 @@
 
 	    startRequest(macUrl.replace('${OFFSET}', macOffsetNow), drawMacList);
 		// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
-		changeMac(macNow);
+	    changeMac(macNow);
 	    
 	</script>
 </body>
