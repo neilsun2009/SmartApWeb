@@ -1,0 +1,129 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <meta charset="UTF-8">
+	<title>Wi-Fi SSID</title>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=fOATGSYuFGYgzyriZhd2ccqK63ngqE98"></script>
+	<script type="text/javascript" src="http://api.map.baidu.com/library/TextIconOverlay/1.2/src/TextIconOverlay_min.js"></script>
+	<script type="text/javascript" src="http://api.map.baidu.com/library/MarkerClusterer/1.2/src/MarkerClusterer_min.js"></script>
+    <!-- <script charset="utf-8" src="http://map.qq.com/api/js?v=2.exp&key=C52BZ-AFJKX-YDZ4H-77UMN-WCU7F-GGB2U"></script> -->
+	<style>
+		* {margin: 0;padding: 0;}
+		html {height:100%;}  
+		body {height:100%;}  
+		#loading {position: fixed;height: 100%;width:100%;top: 0;left: 0;display: none;background-color: rgba(0,0,0,0.3);
+			color: #fff;font-size: 20px;text-align: center;padding-top: 200px;box-sizing: border-box;z-index: 2000;}
+		#loading.show {display: block;}
+		#container {height:100%;width: 100%;display: inline-block;}
+		/*#side {width: 290px;height: 100%;overflow-y: auto;background-color: #f2f2f2;display: inline-block;} 
+		#mac-now {text-align: center; padding: 10px;}
+		#map-pager {border-top:  3px solid #eee;text-align: center;padding: 10px;}
+		#map-pager span:hover {text-decoration: underline; cursor: pointer;}
+		#mac-list {border-top:  3px solid #eee; padding-top: 10px;font-size:  18px;text-align: center;}
+		#mac-list-ul li {padding: 5px;font-size: 14px;}
+		#mac-list-ul li:hover {cursor: pointer;background-color: #ddd;}
+		#mac-list span {font-size: 16px;}
+		#mac-list span:hover {text-decoration: underline; cursor: pointer;}*/
+	</style>
+</head>
+<body>
+	<div id="loading">Loading data...</div>
+	<div id="container"></div>
+	<!-- <div id="side">
+		<div id="mac-now">当前MAC<br/>00-00-00-00-00-00</div>
+		<div id="map-pager">
+			请选择起止日期<br/><br/>
+                        <input type="date" value="2017-05-10" id="start_date">
+                        <br/>~<br/>
+                        <input type="date" value="2017-05-15" id="end_date"><br/><br/>
+                        <button onclick="changeDate()">查询</button><br/><br/>
+                        一次显示10000条数据<br/><br/>
+                        <span onclick="last10000()">前10000条</span>
+                        <span onclick="next10000()">后10000条</span>
+		</div>
+		<div id="mac-list">
+			MAC地址列表<br/>
+			<span onclick="lastMac50()">上50条</span>
+			<span onclick="nextMac50()">下50条</span>
+			<ul id="mac-list-ul">
+				<li>00-00-00-00-00-00: 100条</li>
+			</ul>
+		</div>
+	</div> -->
+	<script>
+		function startRequest(url, callback) {
+			var xhr = new XMLHttpRequest(),
+				loading = document.getElementById('loading');
+			loading.className = 'show';
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState === 4) {
+					if ((xhr.status >= 200 && xhr.status < 300) || xhr.status === 304) {
+						callback(JSON.parse(xhr.responseText));
+						loading.className = '';
+					} else {
+						alert('Request error: ' + xhr.status);
+						console.log(xhr);
+					}
+				}
+			}
+			xhr.open('get', url, true);
+			xhr.send();
+		}
+
+		function drawWifiMap(data) {
+			var arr = data.response.docs,
+				points = [],
+				markers = [],
+				// times = [],
+				labelStr = {
+					st: '',
+					en: ''
+				},
+				markerClusterer,
+				// convertor = new BMap.Convertor(),
+				i, len, current, prev = null, first = true;
+			if (arr.length === 0) {
+				alert('已无记录');
+				return;
+			}
+			bm.clearOverlays();
+			for (len = arr.length, i = 0; i < len; ++i) {
+				if (arr[i].baidu_lon && arr[i].baidu_lat) {
+					// console.log(current);
+					current = arr[i];
+					points.push(new BMap.Point(current.baidu_lon, current.baidu_lat))
+					marker = new BMap.Marker(points[i]);
+					marker.setTitle(current.name);
+					(function(current, marker) {
+						marker.addEventListener('click', function(e) {
+							var str = current.name + '\n' + (current.intro ? current.intro + '\n' : '') + current.address
+							alert(str);
+						});
+					})(current, marker);
+					markers.push(marker);
+					// bm.addOverlay(marker);
+					if  (i === 0) { // first
+						bm.centerAndZoom(points[0], 15);
+					}
+				}
+			}
+			markerClusterer = new BMapLib.MarkerClusterer(bm, {markers:markers});
+			// bm.centerAndZoom(points[points.length - 1], 15);
+		    // convertor.translate(points, 1, 5, translateCallback);
+		}
+
+		// startRequest('http://localhost:8983/solr/terminal_feature_db/select?facet.field=mac&facet=on&q=*:*&rows=0&sort=mac%20asc&facet.limit=1000');
+		
+		var url = 'http://localhost:8983/solr/wifi_ssid_db/select?fl=name,intro,address,baidu_lat,baidu_lon&q=*:*&rows=1000',
+			bm = new BMap.Map("container");
+
+	    	bm.addControl(new BMap.NavigationControl());
+	    	bm.enableScrollWheelZoom(true); 
+	    	// bm.centerAndZoom(new BMap.Point(0, 0), 15);
+
+	    	startRequest(url, drawWifiMap);
+		// startRequest(macLocationUrl.replace('${MAC}', macNow).replace('${START}', startNow.toString()), drawPoints);
+	    
+	</script>
+</body>
+</html>
