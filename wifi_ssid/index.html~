@@ -37,7 +37,7 @@
                         <br/>~<br/>
                         <input type="date" value="2017-05-15" id="end_date"><br/><br/>
                         <button onclick="changeDate()">查询</button><br/><br/>
-                        一次显示10000条数据 <br/><br/>
+                        一次显示10000条数据<br/><br/>
                         <span onclick="last10000()">前10000条</span>
                         <span onclick="next10000()">后10000条</span>
 		</div>
