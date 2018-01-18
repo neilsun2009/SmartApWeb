@@ -15,12 +15,19 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatIconModule} from '@angular/material/icon';
 import { IndexComponent } from './index/index.component';
 import { WifimapComponent } from './wifimap/wifimap.component';
+import { MaclocationComponent } from './maclocation/maclocation.component';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatNativeDateModule } from '@angular/material';
+import { MatInputModule } from '@angular/material/input';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
     AppComponent,
     IndexComponent,
-    WifimapComponent
+    WifimapComponent,
+    MaclocationComponent
   ],
   imports: [
     BrowserModule,
@@ -30,7 +37,12 @@ import { WifimapComponent } from './wifimap/wifimap.component';
     HttpClientModule,
     MatToolbarModule,
     MatButtonModule,
-    MatIconModule
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDatepickerModule,    
+    MatNativeDateModule,
+    MatProgressSpinnerModule
   ],
   providers: [
     HttpService

@@ -1,0 +1,36 @@
+@import '../global.less';
+#container {
+    height:100%;
+    width: ~'calc(100% - 300px)';
+    display: inline-block;
+}
+.side {
+    width: 290px;
+    height: 100%;
+    overflow-y: auto;
+    background-color: #f2f2f2;
+    display: inline-block;
+    .mac-now {
+        text-align: center;
+        padding: 10px;
+    }
+    .map-pager {
+        border-top:  3px solid #eee;
+        text-align: center;
+        padding: 10px;
+    }
+    .mac-list {
+        border-top:  3px solid #eee; 
+        padding-top: 10px;
+        font-size: 18px;
+        text-align: center;
+        ul li{
+            padding: 5px;
+            font-size: 14px;
+            &:hover {
+                cursor: pointer;
+                background-color: #ddd;
+            }
+        }
+    }
+} 

@@ -20,7 +20,7 @@ export class HttpService {
     private http: HttpClient
   ) { }
 
-  get<T>(url: string, callback: ({}) => void, errCallback: ({}) => void) {
+  get<T>(url: string, callback: (any) => void, errCallback: ({}) => void) {
     return this.http.get<T>(url).subscribe(
         (data) => {
             callback(data);

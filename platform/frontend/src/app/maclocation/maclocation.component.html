@@ -1,0 +1,42 @@
+<div class="loading" *ngIf="showLoading">
+  <mat-spinner></mat-spinner>
+</div>
+<h1>MAC Location</h1>
+<div id="container"></div>
+<div class="side">
+	<div class="mac-now">
+    当前MAC<br/>
+    {{currentMac}}
+  </div>
+	<div class="map-pager">
+    请选择起止日期<br/><br/>
+    <mat-form-field class="form-full-width">
+      <input name="start-date" required matInput [matDatepicker]="picker1" placeholder="Start date" [(ngModel)]="startTimeOut">
+      <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+      <mat-datepicker #picker1></mat-datepicker>
+    </mat-form-field>
+    <!-- <input type="date" value="2017-05-10" id="start_date"> -->
+    <br/>~<br/>
+    <mat-form-field class="form-full-width">
+      <input name="end-date" required matInput [matDatepicker]="picker2" placeholder="End date" [(ngModel)]="endTimeOut">
+      <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+      <mat-datepicker #picker2></mat-datepicker>
+    </mat-form-field>
+    <!-- <input type="date" value="2017-05-15" id="end_date"> -->
+    <br/>
+    <button mat-raised-button color="primary" (click)="changeDate()">查询</button>
+    <br/><br/>
+    一次显示10000条数据<br/><br/>
+    <button mat-raised-button color="primary" (click)="last10000()">前10000条</button>
+    <button mat-raised-button color="primary" (click)="next10000()">后10000条</button>
+	</div>
+	<div class="mac-list">
+		MAC地址列表<br/><br/>
+		<button mat-raised-button color="primary" (click)="last50Mac()">前50条</button>
+    <button mat-raised-button color="primary" (click)="next50Mac()">后50条</button>
+    <br/><br/>
+    <ul>
+			<li *ngFor="let mac of macs" (click)="changeMac(mac.mac)">{{mac.mac}}: {{mac.count}}</li>
+		</ul>
+	</div>
+</div>

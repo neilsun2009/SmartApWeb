@@ -9,10 +9,13 @@ import { HttpService } from '../services/http.service';
 export class WifimapComponent implements OnInit {
   
   private bm: any;
+  showLoading: boolean;
 
   constructor(
     private httpService: HttpService
-  ) { }
+  ) { 
+    this.showLoading = false;
+  }
 
   ngOnInit() {
     this.bm = new window['BMap'].Map("container");
@@ -22,6 +25,7 @@ export class WifimapComponent implements OnInit {
   }
 
   getData() {
+    this.showLoading = true;
     this.httpService.get('http://localhost:8983/solr/wifi_ssid_db/select?fl=name,intro,address,baidu_lat,baidu_lon&q=*:*&rows=1000',
     (data) => {
       this.drawWifiMap(data) 
@@ -66,7 +70,7 @@ export class WifimapComponent implements OnInit {
       }
     }
     markerClusterer = new window['BMapLib'].MarkerClusterer(this.bm, {markers:markers});
-    
+    this.showLoading = false;
   }
 
 }
