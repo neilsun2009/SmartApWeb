@@ -1,0 +1,14 @@
+/* You can add global styles to this file, and also import other style files */
+@import './deeppurple-amber.css';
+* {
+    margin: 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+}
+html, body {
+    width: 100%;
+    min-width: 800px;
+    font-family: Helvetica, Arial, 'Microsoft YaHei';
+}
