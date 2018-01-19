@@ -45,6 +45,7 @@ export class WifimapComponent implements OnInit {
       i, len, current, prev = null, first = true;
     if (arr.length === 0) {
       alert('已无记录');
+      this.showLoading = false;
       return;
     }
     this.bm.clearOverlays();

@@ -86,7 +86,8 @@ export class MaclocationComponent implements OnInit {
 				current, prev = null, first = true;
       // console.log(arr);
       if (arr.length === 0) {
-				alert('已无记录');
+        alert('已无记录');
+        this.showLoading = false;
 				return;
 			}
 			this.bm.clearOverlays();
