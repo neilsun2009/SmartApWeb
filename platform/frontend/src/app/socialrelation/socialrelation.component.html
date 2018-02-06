@@ -1,0 +1,28 @@
+<div class="loading" *ngIf="showLoading">
+  <mat-spinner></mat-spinner>
+</div>
+<h1>Social Relation</h1>
+<div class="mac-list">
+  MAC1<br/><br/>
+  <button mat-raised-button color="primary" (click)="last500Mac(0)">前500条</button>
+  <button mat-raised-button color="primary" (click)="next500Mac(0)">后500条</button>
+  <br/><br/>
+  <ul>
+    <li *ngFor="let mac of macs[0]" (click)="changeMac(0, mac)">{{mac}}</li>
+  </ul>
+</div>
+<div class="mac-list">
+  MAC2<br/><br/>
+  <button mat-raised-button color="primary" (click)="last500Mac(1)">前500条</button>
+  <button mat-raised-button color="primary" (click)="next500Mac(1)">后500条</button>
+  <br/><br/>
+  <ul>
+    <li *ngFor="let mac of macs[1]" (click)="changeMac(1, mac)">{{mac}}</li>
+  </ul>
+</div>
+<div class="relation">
+  <h3>{{macSelected[0]}} x {{macSelected[1]}}</h3>
+  <p class="score">{{relationScore}}</p>
+  <pre>{{relationTxt}}</pre>
+  <span>Note that this social relation score is a relative value depending on corresponding MAC addresses, not a absolute value.</span>
+</div>

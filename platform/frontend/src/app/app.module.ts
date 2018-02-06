@@ -21,13 +21,15 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatNativeDateModule } from '@angular/material';
 import { MatInputModule } from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { SocialrelationComponent } from './socialrelation/socialrelation.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     IndexComponent,
     WifimapComponent,
-    MaclocationComponent
+    MaclocationComponent,
+    SocialrelationComponent
   ],
   imports: [
     BrowserModule,
