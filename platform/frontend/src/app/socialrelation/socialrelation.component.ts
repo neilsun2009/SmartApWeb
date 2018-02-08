@@ -25,7 +25,6 @@ export class SocialrelationComponent implements OnInit {
 
   ngOnInit() {
     this.getSSIDs();
-    
   }
 
   getSSIDs() {

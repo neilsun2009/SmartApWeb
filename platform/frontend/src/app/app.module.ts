@@ -22,6 +22,7 @@ import { MatNativeDateModule } from '@angular/material';
 import { MatInputModule } from '@angular/material/input';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { SocialrelationComponent } from './socialrelation/socialrelation.component';
+import { RelatedusersComponent } from './relatedusers/relatedusers.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { SocialrelationComponent } from './socialrelation/socialrelation.compone
     IndexComponent,
     WifimapComponent,
     MaclocationComponent,
-    SocialrelationComponent
+    SocialrelationComponent,
+    RelatedusersComponent
   ],
   imports: [
     BrowserModule,
