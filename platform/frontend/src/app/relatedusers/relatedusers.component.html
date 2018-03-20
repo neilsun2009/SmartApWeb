@@ -3,7 +3,7 @@
 </div>
 <h1>Related Users</h1>
 <div class="mac-list">
-  MAC1<br/><br/>
+  MAC<br/><br/>
   <button mat-raised-button color="primary" (click)="last500Mac()">前500条</button>
   <button mat-raised-button color="primary" (click)="next500Mac()">后500条</button>
   <br/><br/>
@@ -13,8 +13,10 @@
 </div>
 <div class="relation">
   <h3>{{macSelected}}</h3>
-  <p class="score">{{relationScore}}</p>
-  <span *ngFor="let item of macRelList" (click)="changeMac(item.mac)">{{item.mac}}: {{item.score | number: '1.8'}}</span>
+  <span *ngFor="let item of macRelList; let i = index" (click)="changeMac(item.mac)">
+    <span class="number">{{i + 1}}</span>
+    {{item.mac}}: {{item.score | number: '1.8'}}
+  </span>
   <span *ngIf="!macRelList.length">No related user found.</span>
   <!-- <span>Note that this social relation score is a relative value depending on corresponding MAC addresses, not a absolute value.</span> -->
 </div>
